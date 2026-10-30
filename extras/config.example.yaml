@@ -1,33 +1,36 @@
-# Example wt config. Copy to ~/.config/wt/config.yaml.
+# Example wt config. Copy to ~/.config/wt/config.yaml and adjust.
 
 # Where wt creates worktrees, as <worktrees_dir>/<repo>/<name>.
 worktrees_dir: ~/worktrees
 
 # Repo used when wt runs outside a git repo, such as from Rex or Raycast.
-default_repo: main
+# A repo name from the list below, or a path.
+default_repo: my-app
 
 # Random branches are <branch_prefix>/<three words>. Empty uses your GitHub username.
-# branch_prefix: backevik
+# branch_prefix: your-name
 
+# Repos without an entry get one shell tab.
 repos:
-  - path: ~/projects/work/main
-    layout: main
+  - path: ~/code/my-app
+    layout: agent-dev # optional: name defaults to the folder name, here my-app
 
 layouts:
-  # agent on the left, cli above git on the right.
-  main:
+  # An agent on the left, a dev server above a shell on the right.
+  agent-dev:
     tabs:
-      - title: frontend
+      - title: dev
         root:
-          split: horizontal
+          split: horizontal # before is left of after; vertical puts before on top
+          ratio: 0.6 # before's share of the space
           before:
             pane: agent
-            input: opencode --auto
+            input: claude # typed into the pane's shell; use command: [...] to run without a shell
           after:
             split: vertical
             before:
-              pane: cli
-              dir: frontend
-              input: pnpm run dev:init
+              pane: server
+              dir: web # relative to the worktree
+              input: npm run dev
             after:
-              pane: git
+              pane: shell

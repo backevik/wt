@@ -11,4 +11,6 @@
 # @raycast.argument1 { "type": "text", "placeholder": "branch (random if empty)", "optional": true }
 # @raycast.description Create a git worktree with its own Rex session.
 
-exec "$HOME/go/bin/wt" new ${1:+"$1"}
+# Raycast runs with a minimal PATH, so fall back to where go install puts wt.
+wt=$(command -v wt || echo "${GOBIN:-${GOPATH:-$HOME/go}/bin}/wt")
+exec "$wt" new ${1:+"$1"}

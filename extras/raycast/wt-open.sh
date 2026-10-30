@@ -11,4 +11,6 @@
 # @raycast.argument1 { "type": "text", "placeholder": "worktree name" }
 # @raycast.description Switch to a worktree's Rex session, recreating it if it was closed.
 
-exec "$HOME/go/bin/wt" open "$1"
+# Raycast runs with a minimal PATH, so fall back to where go install puts wt.
+wt=$(command -v wt || echo "${GOBIN:-${GOPATH:-$HOME/go}/bin}/wt")
+exec "$wt" open "$1"

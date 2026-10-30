@@ -33,33 +33,33 @@ func TestLoadMissingFileUsesDefaults(t *testing.T) {
 func TestLoadRepoLayout(t *testing.T) {
 	cfg, err := Load(write(t, `
 repos:
-  - path: ~/projects/work/main
+  - path: ~/code/my-app
     layout: main
 layouts:
   main:
     tabs:
-      - title: frontend
+      - title: web
         root:
           split: horizontal
-          before: {pane: agent, input: opencode --auto}
+          before: {pane: agent, input: claude}
           after:
             split: vertical
-            before: {pane: cli, dir: frontend, input: pnpm run dev:init}
+            before: {pane: server, dir: web, input: npm run dev}
             after: {pane: git}
 `))
 	if err != nil {
 		t.Fatal(err)
 	}
 	home, _ := os.UserHomeDir()
-	repo, ok := cfg.RepoByPath(filepath.Join(home, "projects/work/main"))
+	repo, ok := cfg.RepoByPath(filepath.Join(home, "code/my-app"))
 	if !ok {
 		t.Fatal("repo not found by its expanded path")
 	}
-	if repo.Name != "main" {
-		t.Errorf("Name = %q, want main (the folder name)", repo.Name)
+	if repo.Name != "my-app" {
+		t.Errorf("Name = %q, want my-app (the folder name)", repo.Name)
 	}
 	root := cfg.LayoutFor(repo).Tabs[0].Root
-	if root.Before.Pane != "agent" || root.After.Before.Dir != "frontend" {
+	if root.Before.Pane != "agent" || root.After.Before.Dir != "web" {
 		t.Errorf("layout not parsed as written: %+v", root)
 	}
 }
@@ -73,8 +73,8 @@ func TestExampleConfigLoads(t *testing.T) {
 	if !ok {
 		t.Fatalf("default_repo %q is not a configured repo", cfg.DefaultRepo)
 	}
-	if got := cfg.LayoutFor(repo).Tabs[0].Title; got != "frontend" {
-		t.Errorf("first tab = %q, want frontend", got)
+	if got := cfg.LayoutFor(repo).Tabs[0].Title; got != "dev" {
+		t.Errorf("first tab = %q, want dev", got)
 	}
 }
 

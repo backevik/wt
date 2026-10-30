@@ -17,10 +17,14 @@ import (
 
 const (
 	shellFlavor = "com.superlogical.terminal.shell"
-	appBinDir   = "/Applications/Rex Beta.app/Contents/Helpers/Rex Server.rex/Contents/MacOS"
+	// appHelper is where the Rex app bundles its rex binary.
+	appHelper = "Contents/Helpers/Rex Server.rex/Contents/MacOS"
 	// exitUnreachable is rex's exit status when the server can't be reached.
 	exitUnreachable = 4
 )
+
+// appNames are the Rex app bundles to look in, release before beta.
+var appNames = []string{"Rex.app", "Rex Beta.app"}
 
 // ErrUnreachable means the Rex server couldn't be reached, so nothing is
 // known about its sessions. It never means a session is gone.
@@ -31,7 +35,8 @@ type Rex struct {
 	Bin string
 }
 
-// New finds the rex binary: the configured one, then PATH, then the Rex app.
+// New finds the rex binary: the configured one, then PATH, then REX_BIN_DIR
+// (set in Rex terminals), then the Rex app in /Applications or ~/Applications.
 func New(configured string) (*Rex, error) {
 	if configured != "" {
 		return &Rex{Bin: configured}, nil
@@ -39,7 +44,17 @@ func New(configured string) (*Rex, error) {
 	if p, err := exec.LookPath("rex"); err == nil {
 		return &Rex{Bin: p}, nil
 	}
-	for _, dir := range []string{os.Getenv("REX_BIN_DIR"), appBinDir} {
+	dirs := []string{os.Getenv("REX_BIN_DIR")}
+	appDirs := []string{"/Applications"}
+	if home, err := os.UserHomeDir(); err == nil {
+		appDirs = append(appDirs, filepath.Join(home, "Applications"))
+	}
+	for _, appDir := range appDirs {
+		for _, name := range appNames {
+			dirs = append(dirs, filepath.Join(appDir, name, appHelper))
+		}
+	}
+	for _, dir := range dirs {
 		if dir == "" {
 			continue
 		}
